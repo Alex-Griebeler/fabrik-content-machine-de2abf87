@@ -2,7 +2,7 @@ import { useJobs, type ContentJob } from "@/hooks/useJobs";
 import { QueueCard } from "@/components/QueueCard";
 
 const QueuePage = () => {
-  const { jobs, updateJobStatus } = useJobs();
+  const { jobs, loading, updateJobStatus } = useJobs();
   const pendingJobs = jobs.filter(
     (j) => j.status === "pending_approval"
   );
