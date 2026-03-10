@@ -1,22 +1,30 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
+import { AppLayout } from "@/components/layout/AppLayout";
+import QueuePage from "@/pages/Index";
+import EditorPage from "@/pages/Editor";
+import HistoryPage from "@/pages/History";
+import InputPage from "@/pages/Input";
+import SettingsPage from "@/pages/Settings";
+import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<QueuePage />} />
+            <Route path="/editor" element={<EditorPage />} />
+            <Route path="/history" element={<HistoryPage />} />
+            <Route path="/input" element={<InputPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
