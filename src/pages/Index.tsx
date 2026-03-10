@@ -4,7 +4,7 @@ import { QueueCard } from "@/components/QueueCard";
 const QueuePage = () => {
   const { jobs, loading, updateJobStatus } = useJobs();
   const pendingJobs = jobs.filter(
-    (j) => j.status === "pending_approval"
+    (j) => j.status === "pending_approval" || j.status === "awaiting_approval"
   );
 
   return (
