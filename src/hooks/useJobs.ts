@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { supabaseExternal } from "@/lib/supabase-external";
 
-export type JobStatus = "pending_approval" | "approved" | "rejected" | "published";
+export type JobStatus = "pending" | "processing" | "awaiting_approval" | "pending_approval" | "approved" | "rejected" | "published" | "failed";
 
 export interface ContentOutput {
   job_id: string;
