@@ -61,7 +61,7 @@ export function useJobs() {
 
   const fetchJobs = async () => {
     const [jobsRes, outputsRes] = await Promise.all([
-      supabaseExternal.from("content_jobs").select("*").order("created_at", { ascending: false }),
+      supabaseExternal.from("content_jobs").select("*"),
       supabaseExternal.from("content_outputs").select("*"),
     ]);
 
