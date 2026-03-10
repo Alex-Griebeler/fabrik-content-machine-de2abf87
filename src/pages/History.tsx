@@ -16,7 +16,7 @@ const tabs: { key: FilterTab; label: string }[] = [
 ];
 
 const HistoryPage = () => {
-  const { jobs } = useJobs();
+  const { jobs, loading } = useJobs();
   const [filter, setFilter] = useState<FilterTab>("all");
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
