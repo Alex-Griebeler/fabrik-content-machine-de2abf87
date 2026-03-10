@@ -1,49 +1,99 @@
 import { useState, useMemo, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
+import { supabaseExternal } from "@/lib/supabase-external";
 
 export type JobStatus = "pending_approval" | "approved" | "rejected" | "published";
 export type ContentFormat = "CARROSSEL" | "REEL" | "STORY";
 
-export type ContentJob = Tables<"content_jobs"> & {
+export interface ContentOutput {
+  id: string;
+  job_id: string;
+  hook: string;
+  caption: string;
+  hashtags: string[];
+  cta: string;
   format: ContentFormat;
+  pillar: string;
+  trigger: string;
+  created_at: string;
+}
+
+export interface ContentJob {
+  id: string;
   status: JobStatus;
-};
+  input_type: string;
+  raw_content: string;
+  created_at: string;
+  updated_at: string;
+  // Joined from content_outputs
+  outputs: ContentOutput[];
+  // Convenience: first output fields (for display)
+  format: ContentFormat;
+  pillar: string;
+  hook: string;
+  caption: string;
+  hashtags: string[];
+  cta: string;
+}
+
+function mergeJobWithOutput(job: any, outputs: any[]): ContentJob {
+  const jobOutputs = outputs.filter((o: any) => o.job_id === job.id);
+  const first = jobOutputs[0];
+  return {
+    id: job.id,
+    status: job.status as JobStatus,
+    input_type: job.input_type ?? "",
+    raw_content: job.raw_content ?? "",
+    created_at: job.created_at,
+    updated_at: job.updated_at,
+    outputs: jobOutputs as ContentOutput[],
+    format: (first?.format ?? "CARROSSEL") as ContentFormat,
+    pillar: first?.pillar ?? "",
+    hook: first?.hook ?? "",
+    caption: first?.caption ?? "",
+    hashtags: first?.hashtags ?? [],
+    cta: first?.cta ?? "",
+  };
+}
 
 export function useJobs() {
   const [jobs, setJobs] = useState<ContentJob[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch jobs from database
+  const fetchJobs = async () => {
+    const [jobsRes, outputsRes] = await Promise.all([
+      supabaseExternal.from("content_jobs").select("*").order("created_at", { ascending: false }),
+      supabaseExternal.from("content_outputs").select("*"),
+    ]);
+
+    if (!jobsRes.error && !outputsRes.error && jobsRes.data && outputsRes.data) {
+      const merged = jobsRes.data.map((job: any) =>
+        mergeJobWithOutput(job, outputsRes.data)
+      );
+      setJobs(merged);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchJobs = async () => {
-      const { data, error } = await supabase
-        .from("content_jobs")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (!error && data) {
-        setJobs(data as ContentJob[]);
-      }
-      setLoading(false);
-    };
-
     fetchJobs();
 
-    // Realtime subscription
-    const channel = supabase
+    // Realtime subscription on content_jobs
+    const channel = supabaseExternal
       .channel("content_jobs_realtime")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "content_jobs" },
-        () => {
-          fetchJobs();
-        }
+        () => fetchJobs()
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "content_outputs" },
+        () => fetchJobs()
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabaseExternal.removeChannel(channel);
     };
   }, []);
 
@@ -56,15 +106,13 @@ export function useJobs() {
     // Optimistic update
     setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, status } : j)));
 
-    const { error } = await supabase
+    const { error } = await supabaseExternal
       .from("content_jobs")
       .update({ status })
       .eq("id", id);
 
     if (error) {
-      // Revert on error
-      const { data } = await supabase.from("content_jobs").select("*").order("created_at", { ascending: false });
-      if (data) setJobs(data as ContentJob[]);
+      fetchJobs(); // Revert on error
     }
   };
 

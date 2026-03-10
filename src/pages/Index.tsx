@@ -2,7 +2,7 @@ import { useJobs, type ContentJob } from "@/hooks/useJobs";
 import { QueueCard } from "@/components/QueueCard";
 
 const QueuePage = () => {
-  const { jobs, updateJobStatus } = useJobs();
+  const { jobs, loading, updateJobStatus } = useJobs();
   const pendingJobs = jobs.filter(
     (j) => j.status === "pending_approval"
   );
@@ -14,7 +14,11 @@ const QueuePage = () => {
         {pendingJobs.length} post{pendingJobs.length !== 1 ? "s" : ""} aguardando sua revisão
       </p>
 
-      {pendingJobs.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-24">
+          <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : pendingJobs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-16 h-16 rounded-2xl bg-surface flex items-center justify-center mb-6">
             <span className="font-serif text-2xl text-brand">F</span>
