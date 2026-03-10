@@ -106,6 +106,8 @@ export function useJobs() {
   );
 
   const updateJobStatus = async (id: string, status: JobStatus) => {
+    console.log(`[useJobs] updateJobStatus called: id=${id}, status=${status}`);
+    
     setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, status } : j)));
 
     const updateData: any = { status };
@@ -113,13 +115,19 @@ export function useJobs() {
       updateData.approved_at = new Date().toISOString();
     }
 
-    const { error } = await supabaseExternal
+    console.log("[useJobs] Sending PATCH to content_jobs:", updateData);
+
+    const { error, data } = await supabaseExternal
       .from("content_jobs")
       .update(updateData)
-      .eq("id", id);
+      .eq("id", id)
+      .select();
 
     if (error) {
-      console.error("Error updating job status:", error);
+      console.error("[useJobs] Error updating job status:", error);
+      fetchJobs();
+    } else {
+      console.log("[useJobs] Update success:", data);
       fetchJobs();
     }
   };
