@@ -57,9 +57,11 @@ const HistoryPage = () => {
                 <p className="text-foreground font-medium truncate">{job.hook}</p>
                 <div className="flex items-center gap-2 mt-2">
                   <FormatBadge format={job.format} />
-                  <span className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: ptBR })}
-                  </span>
+                  {job.scheduled_at && (
+                    <span className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(job.scheduled_at), { addSuffix: true, locale: ptBR })}
+                    </span>
+                  )}
                 </div>
               </div>
               <StatusBadge status={job.status} />
@@ -78,21 +80,28 @@ const HistoryPage = () => {
               <div className="flex gap-2">
                 <FormatBadge format={selectedJob.format} />
                 <StatusBadge status={selectedJob.status} />
-                <span className="text-xs bg-brand/10 text-brand px-2 py-1 rounded-full">{selectedJob.pillar}</span>
+                <span className="text-xs bg-brand/10 text-brand px-2 py-1 rounded-full">{selectedJob.pilar}</span>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Caption</p>
-                <p className="text-sm text-foreground">{selectedJob.caption}</p>
+                <p className="text-xs text-muted-foreground mb-1">Corpo</p>
+                <p className="text-sm text-foreground">{selectedJob.body}</p>
               </div>
+              {selectedJob.closing && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Fechamento</p>
+                  <p className="text-sm text-foreground">{selectedJob.closing}</p>
+                </div>
+              )}
               <div>
                 <p className="text-xs text-muted-foreground mb-1">CTA</p>
                 <p className="text-sm text-foreground">{selectedJob.cta}</p>
               </div>
-              <div className="flex flex-wrap gap-1">
-                {selectedJob.hashtags.map((h) => (
-                  <span key={h} className="text-xs bg-surface text-brand px-2 py-1 rounded-full">{h}</span>
-                ))}
-              </div>
+              {selectedJob.visual_notes && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Notas visuais</p>
+                  <p className="text-sm text-foreground">{selectedJob.visual_notes}</p>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

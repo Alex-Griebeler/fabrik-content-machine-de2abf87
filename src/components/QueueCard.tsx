@@ -22,20 +22,22 @@ export function QueueCard({ job, onApprove, onReject }: QueueCardProps) {
       <div className="flex items-center gap-2 mb-3">
         <FormatBadge format={job.format} />
         <span className="text-xs bg-brand/10 text-brand px-2 py-1 rounded-full font-medium">
-          {job.pillar}
+          {job.pilar}
         </span>
-        <span className="ml-auto text-xs text-muted-foreground">
-          {formatDistanceToNow(new Date(job.created_at), { addSuffix: true, locale: ptBR })}
-        </span>
+        {job.scheduled_at && (
+          <span className="ml-auto text-xs text-muted-foreground">
+            {formatDistanceToNow(new Date(job.scheduled_at), { addSuffix: true, locale: ptBR })}
+          </span>
+        )}
       </div>
 
       <h2 className="text-lg font-serif text-foreground mb-2 leading-snug">{job.hook}</h2>
 
       <div className="mb-3">
         <p className={`text-sm text-muted-foreground ${expanded ? "" : "line-clamp-3"}`}>
-          {job.caption}
+          {job.body}
         </p>
-        {job.caption.length > 120 && (
+        {job.body && job.body.length > 120 && (
           <button
             onClick={() => setExpanded(!expanded)}
             className="text-xs text-brand hover:underline mt-1"
@@ -45,13 +47,12 @@ export function QueueCard({ job, onApprove, onReject }: QueueCardProps) {
         )}
       </div>
 
-      <div className="flex flex-wrap gap-1 mb-3">
-        {job.hashtags.map((h) => (
-          <span key={h} className="text-xs bg-surface text-muted-foreground px-2 py-0.5 rounded-full">
-            {h}
-          </span>
-        ))}
-      </div>
+      {job.closing && (
+        <p className="text-sm text-foreground mb-3">
+          <span className="text-muted-foreground text-xs mr-1">Fechamento:</span>
+          {job.closing}
+        </p>
+      )}
 
       <p className="text-sm text-foreground mb-4">
         <span className="text-muted-foreground text-xs mr-1">CTA:</span>
