@@ -16,16 +16,18 @@ const EditorPage = () => {
   const job = jobs.find((j) => j.id === jobId);
 
   const [hook, setHook] = useState("");
-  const [caption, setCaption] = useState("");
-  const [hashtags, setHashtags] = useState("");
+  const [body, setBody] = useState("");
+  const [closing, setClosing] = useState("");
   const [cta, setCta] = useState("");
+  const [visualNotes, setVisualNotes] = useState("");
 
   useEffect(() => {
     if (job) {
       setHook(job.hook);
-      setCaption(job.caption);
-      setHashtags(job.hashtags?.join(" ") ?? "");
+      setBody(job.body);
+      setClosing(job.closing);
       setCta(job.cta);
+      setVisualNotes(job.visual_notes);
     }
   }, [job]);
 
@@ -66,16 +68,20 @@ const EditorPage = () => {
             <Input value={hook} onChange={(e) => setHook(e.target.value)} className="bg-input border-border text-foreground" />
           </div>
           <div>
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">Caption</label>
-            <Textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={5} className="bg-input border-border text-foreground resize-none" />
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">Corpo do post</label>
+            <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={5} className="bg-input border-border text-foreground resize-none" />
           </div>
           <div>
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">Hashtags</label>
-            <Input value={hashtags} onChange={(e) => setHashtags(e.target.value)} className="bg-input border-border text-foreground" />
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">Fechamento</label>
+            <Textarea value={closing} onChange={(e) => setClosing(e.target.value)} rows={2} className="bg-input border-border text-foreground resize-none" />
           </div>
           <div>
             <label className="text-sm font-medium text-muted-foreground mb-2 block">CTA</label>
             <Input value={cta} onChange={(e) => setCta(e.target.value)} className="bg-input border-border text-foreground" />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">Notas visuais</label>
+            <Textarea value={visualNotes} onChange={(e) => setVisualNotes(e.target.value)} rows={2} className="bg-input border-border text-foreground resize-none" />
           </div>
           <div className="flex gap-3 pt-4">
             <Button onClick={handleSaveApprove} className="bg-brand hover:bg-brand-hover text-primary-foreground flex-1">
@@ -98,9 +104,9 @@ const EditorPage = () => {
           </div>
           <div className="space-y-2">
             <p className="text-sm text-foreground font-medium">{hook}</p>
-            <p className="text-sm text-muted-foreground line-clamp-3">{caption}</p>
+            <p className="text-sm text-muted-foreground line-clamp-3">{body}</p>
+            {closing && <p className="text-sm text-muted-foreground italic">{closing}</p>}
             <button className="text-xs text-muted-foreground hover:text-foreground">ver mais</button>
-            <p className="text-xs text-brand">{hashtags}</p>
           </div>
         </div>
       </div>

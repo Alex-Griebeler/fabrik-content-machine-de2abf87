@@ -2,37 +2,34 @@ import { useState, useMemo, useEffect } from "react";
 import { supabaseExternal } from "@/lib/supabase-external";
 
 export type JobStatus = "pending_approval" | "approved" | "rejected" | "published";
-export type ContentFormat = "CARROSSEL" | "REEL" | "STORY";
 
 export interface ContentOutput {
-  id: string;
   job_id: string;
   hook: string;
-  caption: string;
-  hashtags: string[];
+  body: string;
+  closing: string;
+  visual_notes: string;
   cta: string;
-  format: ContentFormat;
-  pillar: string;
-  trigger: string;
-  created_at: string;
+  gatilho: string;
+  pilar: string;
 }
 
 export interface ContentJob {
   id: string;
+  input_id: string;
+  format: string;
+  pilar: string;
   status: JobStatus;
-  input_type: string;
-  raw_content: string;
-  created_at: string;
-  updated_at: string;
-  // Joined from content_outputs
+  scheduled_at: string;
+  approved_at: string | null;
+  // From first output
   outputs: ContentOutput[];
-  // Convenience: first output fields (for display)
-  format: ContentFormat;
-  pillar: string;
   hook: string;
-  caption: string;
-  hashtags: string[];
+  body: string;
+  closing: string;
+  visual_notes: string;
   cta: string;
+  gatilho: string;
 }
 
 function mergeJobWithOutput(job: any, outputs: any[]): ContentJob {
@@ -40,18 +37,19 @@ function mergeJobWithOutput(job: any, outputs: any[]): ContentJob {
   const first = jobOutputs[0];
   return {
     id: job.id,
-    status: job.status as JobStatus,
-    input_type: job.input_type ?? "",
-    raw_content: job.raw_content ?? "",
-    created_at: job.created_at,
-    updated_at: job.updated_at,
+    input_id: job.input_id ?? "",
+    format: job.format ?? "",
+    pilar: job.pilar ?? "",
+    status: (job.status ?? "pending_approval") as JobStatus,
+    scheduled_at: job.scheduled_at ?? "",
+    approved_at: job.approved_at ?? null,
     outputs: jobOutputs as ContentOutput[],
-    format: (first?.format ?? "CARROSSEL") as ContentFormat,
-    pillar: first?.pillar ?? "",
     hook: first?.hook ?? "",
-    caption: first?.caption ?? "",
-    hashtags: first?.hashtags ?? [],
+    body: first?.body ?? "",
+    closing: first?.closing ?? "",
+    visual_notes: first?.visual_notes ?? "",
     cta: first?.cta ?? "",
+    gatilho: first?.gatilho ?? "",
   };
 }
 
@@ -61,23 +59,28 @@ export function useJobs() {
 
   const fetchJobs = async () => {
     const [jobsRes, outputsRes] = await Promise.all([
-      supabaseExternal.from("content_jobs").select("*"),
+      supabaseExternal.from("content_jobs").select("*").order("scheduled_at", { ascending: false }),
       supabaseExternal.from("content_outputs").select("*"),
     ]);
 
-    if (!jobsRes.error && !outputsRes.error && jobsRes.data && outputsRes.data) {
-      const merged = jobsRes.data.map((job: any) =>
-        mergeJobWithOutput(job, outputsRes.data)
-      );
-      setJobs(merged);
+    if (jobsRes.error) {
+      console.error("Error fetching content_jobs:", jobsRes.error);
     }
+    if (outputsRes.error) {
+      console.error("Error fetching content_outputs:", outputsRes.error);
+    }
+
+    const jobsData = jobsRes.data ?? [];
+    const outputsData = outputsRes.data ?? [];
+
+    const merged = jobsData.map((job: any) => mergeJobWithOutput(job, outputsData));
+    setJobs(merged);
     setLoading(false);
   };
 
   useEffect(() => {
     fetchJobs();
 
-    // Realtime subscription on content_jobs
     const channel = supabaseExternal
       .channel("content_jobs_realtime")
       .on(
@@ -103,16 +106,21 @@ export function useJobs() {
   );
 
   const updateJobStatus = async (id: string, status: JobStatus) => {
-    // Optimistic update
     setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, status } : j)));
+
+    const updateData: any = { status };
+    if (status === "approved") {
+      updateData.approved_at = new Date().toISOString();
+    }
 
     const { error } = await supabaseExternal
       .from("content_jobs")
-      .update({ status })
+      .update(updateData)
       .eq("id", id);
 
     if (error) {
-      fetchJobs(); // Revert on error
+      console.error("Error updating job status:", error);
+      fetchJobs();
     }
   };
 
