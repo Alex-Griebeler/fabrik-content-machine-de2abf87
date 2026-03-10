@@ -101,7 +101,7 @@ export function useJobs() {
   }, []);
 
   const pendingCount = useMemo(
-    () => jobs.filter((j) => j.status === "pending_approval").length,
+    () => jobs.filter((j) => j.status === "pending_approval" || j.status === "awaiting_approval").length,
     [jobs]
   );
 
