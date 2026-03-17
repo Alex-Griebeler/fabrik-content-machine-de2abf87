@@ -33,9 +33,24 @@ const EditorPage = () => {
     }
   }, [job]);
 
+  const handleSaveDraft = async () => {
+    if (!jobId) return;
+    setSaving(true);
+    const ok = await updateJobContent(jobId, { hook, body, closing, cta, visual_notes: visualNotes });
+    setSaving(false);
+    if (ok) {
+      toast.success("Rascunho salvo com sucesso!");
+    } else {
+      toast.error("Erro ao salvar rascunho.");
+    }
+  };
+
   const handleSaveApprove = async () => {
     if (!jobId) return;
+    setSaving(true);
+    await updateJobContent(jobId, { hook, body, closing, cta, visual_notes: visualNotes });
     await updateJobStatus(jobId, "approved");
+    setSaving(false);
     toast.success("Post aprovado com sucesso!");
     navigate("/");
   };
