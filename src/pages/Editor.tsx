@@ -5,13 +5,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Camera, Loader2 } from "lucide-react";
 import { useJobs } from "@/hooks/useJobs";
+import { Save } from "lucide-react";
 import { toast } from "sonner";
 
 const EditorPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const jobId = searchParams.get("jobId");
-  const { jobs, loading, updateJobStatus } = useJobs();
+  const { jobs, loading, updateJobStatus, updateJobContent } = useJobs();
+  const [saving, setSaving] = useState(false);
 
   const job = jobs.find((j) => j.id === jobId);
 
@@ -31,9 +33,24 @@ const EditorPage = () => {
     }
   }, [job]);
 
+  const handleSaveDraft = async () => {
+    if (!jobId) return;
+    setSaving(true);
+    const ok = await updateJobContent(jobId, { hook, body, closing, cta, visual_notes: visualNotes });
+    setSaving(false);
+    if (ok) {
+      toast.success("Rascunho salvo com sucesso!");
+    } else {
+      toast.error("Erro ao salvar rascunho.");
+    }
+  };
+
   const handleSaveApprove = async () => {
     if (!jobId) return;
+    setSaving(true);
+    await updateJobContent(jobId, { hook, body, closing, cta, visual_notes: visualNotes });
     await updateJobStatus(jobId, "approved");
+    setSaving(false);
     toast.success("Post aprovado com sucesso!");
     navigate("/");
   };
@@ -84,13 +101,17 @@ const EditorPage = () => {
             <Textarea value={visualNotes} onChange={(e) => setVisualNotes(e.target.value)} rows={2} className="bg-input border-border text-foreground resize-none" />
           </div>
           <div className="flex gap-3 pt-4">
-            <Button onClick={handleSaveApprove} className="bg-brand hover:bg-brand-hover text-primary-foreground flex-1">
-              Salvar e Aprovar
+            <Button onClick={handleSaveDraft} variant="outline" disabled={saving} className="flex-1">
+              <Save className="w-4 h-4 mr-1" />
+              {saving ? "Salvando..." : "Salvar Rascunho"}
             </Button>
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={() => navigate(-1)}>
-              Cancelar
+            <Button onClick={handleSaveApprove} disabled={saving} className="bg-brand hover:bg-brand-hover text-primary-foreground flex-1">
+              {saving ? "Salvando..." : "Salvar e Aprovar"}
             </Button>
           </div>
+          <Button variant="ghost" className="text-muted-foreground hover:text-foreground mt-2 w-full" onClick={() => navigate(-1)}>
+            Cancelar
+          </Button>
         </div>
 
         <div className="bg-card border border-border rounded-xl p-4 h-fit">

@@ -105,6 +105,25 @@ export function useJobs() {
     [jobs]
   );
 
+  const updateJobContent = async (id: string, content: { hook?: string; body?: string; closing?: string; cta?: string; visual_notes?: string }) => {
+    console.log(`[useJobs] updateJobContent called: id=${id}`, content);
+
+    // Update content_outputs
+    const { error, data } = await supabaseExternal
+      .from("content_outputs")
+      .update(content)
+      .eq("job_id", id)
+      .select();
+
+    if (error) {
+      console.error("[useJobs] Error updating content_outputs:", error);
+      return false;
+    }
+    console.log("[useJobs] Content update success:", data);
+    await fetchJobs();
+    return true;
+  };
+
   const updateJobStatus = async (id: string, status: JobStatus) => {
     console.log(`[useJobs] updateJobStatus called: id=${id}, status=${status}`);
     
@@ -132,5 +151,5 @@ export function useJobs() {
     }
   };
 
-  return { jobs, loading, pendingCount, updateJobStatus };
+  return { jobs, loading, pendingCount, updateJobStatus, updateJobContent };
 }
