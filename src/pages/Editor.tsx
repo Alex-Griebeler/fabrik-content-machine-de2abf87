@@ -12,7 +12,8 @@ const EditorPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const jobId = searchParams.get("jobId");
-  const { jobs, loading, updateJobStatus } = useJobs();
+  const { jobs, loading, updateJobStatus, updateJobContent } = useJobs();
+  const [saving, setSaving] = useState(false);
 
   const job = jobs.find((j) => j.id === jobId);
 
