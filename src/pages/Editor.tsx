@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Camera, Loader2 } from "lucide-react";
 import { useJobs } from "@/hooks/useJobs";
+import { Save } from "lucide-react";
 import { toast } from "sonner";
 
 const EditorPage = () => {
