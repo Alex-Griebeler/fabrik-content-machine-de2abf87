@@ -101,13 +101,17 @@ const EditorPage = () => {
             <Textarea value={visualNotes} onChange={(e) => setVisualNotes(e.target.value)} rows={2} className="bg-input border-border text-foreground resize-none" />
           </div>
           <div className="flex gap-3 pt-4">
-            <Button onClick={handleSaveApprove} className="bg-brand hover:bg-brand-hover text-primary-foreground flex-1">
-              Salvar e Aprovar
+            <Button onClick={handleSaveDraft} variant="outline" disabled={saving} className="flex-1">
+              <Save className="w-4 h-4 mr-1" />
+              {saving ? "Salvando..." : "Salvar Rascunho"}
             </Button>
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={() => navigate(-1)}>
-              Cancelar
+            <Button onClick={handleSaveApprove} disabled={saving} className="bg-brand hover:bg-brand-hover text-primary-foreground flex-1">
+              {saving ? "Salvando..." : "Salvar e Aprovar"}
             </Button>
           </div>
+          <Button variant="ghost" className="text-muted-foreground hover:text-foreground mt-2 w-full" onClick={() => navigate(-1)}>
+            Cancelar
+          </Button>
         </div>
 
         <div className="bg-card border border-border rounded-xl p-4 h-fit">

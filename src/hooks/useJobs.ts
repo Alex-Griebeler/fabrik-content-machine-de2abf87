@@ -151,5 +151,5 @@ export function useJobs() {
     }
   };
 
-  return { jobs, loading, pendingCount, updateJobStatus };
+  return { jobs, loading, pendingCount, updateJobStatus, updateJobContent };
 }
