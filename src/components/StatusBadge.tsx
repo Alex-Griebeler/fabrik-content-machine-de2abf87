@@ -12,7 +12,7 @@ const statusConfig: Record<JobStatus, { label: string; className: string }> = {
 };
 
 export function StatusBadge({ status }: { status: JobStatus }) {
-  const config = statusConfig[status];
+  const config = statusConfig[status] ?? { label: status, className: "bg-muted text-muted-foreground" };
   return (
     <span className={`text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap ${config.className}`}>
       {config.label}
