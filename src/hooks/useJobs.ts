@@ -81,8 +81,11 @@ export function useJobs() {
   useEffect(() => {
     fetchJobs();
 
+    // A unique topic prevents a remount/HMR cycle from reusing a channel that
+    // has already been subscribed while its asynchronous cleanup is running.
+    const channelName = `content_jobs_realtime_${crypto.randomUUID()}`;
     const channel = supabaseExternal
-      .channel("content_jobs_realtime")
+      .channel(channelName)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "content_jobs" },
@@ -96,7 +99,7 @@ export function useJobs() {
       .subscribe();
 
     return () => {
-      supabaseExternal.removeChannel(channel);
+      void supabaseExternal.removeChannel(channel);
     };
   }, []);
 
